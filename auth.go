@@ -45,6 +45,19 @@ type User struct {
 	UpdatedAt          time.Time                 `json:"updated_at"`
 }
 
+type AccessTokenResponse struct {
+	Token                string             `json:"access_token"`
+	TokenType            string             `json:"token_type"` // Bearer
+	ExpiresIn            int                `json:"expires_in"`
+	ExpiresAt            int64              `json:"expires_at"`
+	RefreshToken         string             `json:"refresh_token"`
+	User                 *models.User       `json:"user"`
+	ProviderAccessToken  string             `json:"provider_token,omitempty"`
+	ProviderRefreshToken string             `json:"provider_refresh_token,omitempty"`
+	WeakPassword         *WeakPasswordError `json:"weak_password,omitempty"`
+}
+
+
 // SignUp registers the user's email and password to the database.
 func (a *Auth) SignUp(ctx context.Context, credentials UserCredentials) (*User, error) {
 	reqBody, _ := json.Marshal(credentials)
@@ -56,6 +69,23 @@ func (a *Auth) SignUp(ctx context.Context, credentials UserCredentials) (*User, 
 
 	req.Header.Set("Content-Type", "application/json")
 	res := User{}
+	if err := a.client.sendRequest(req, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+// SignUp registers the user's email and password to the database.
+func (a *Auth) SignupAnonymously(ctx context.Context, credentials UserCredentials) (*AccessTokenResponse, error) {
+	reqBody, _ := json.Marshal(credentials)
+	reqURL := fmt.Sprintf("%s/%s/signup", a.client.BaseURL, AuthEndpoint)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	res := AccessTokenResponse{}
 	if err := a.client.sendRequest(req, &res); err != nil {
 		return nil, err
 	}
