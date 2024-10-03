@@ -51,10 +51,9 @@ type AccessTokenResponse struct {
 	ExpiresIn            int                `json:"expires_in"`
 	ExpiresAt            int64              `json:"expires_at"`
 	RefreshToken         string             `json:"refresh_token"`
-	User                 *models.User       `json:"user"`
+	User                 User      `json:"user"`
 	ProviderAccessToken  string             `json:"provider_token,omitempty"`
 	ProviderRefreshToken string             `json:"provider_refresh_token,omitempty"`
-	WeakPassword         *WeakPasswordError `json:"weak_password,omitempty"`
 }
 
 
